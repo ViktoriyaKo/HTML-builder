@@ -17,6 +17,7 @@ rl.on('line', (input) => {
     output.write(input + '\n')
   });
 
+
 process.on('SIGINT', () => {
     console.log('До новых встреч!');
     process.exit()
