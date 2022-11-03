@@ -1,0 +1,71 @@
+const fs = require('fs');
+const path = require('path');
+
+
+const outputCss = fs.createWriteStream(path.join(__dirname, 'project-dist', 'style.css'), 'utf-8');
+const outputHtml = fs.createWriteStream(path.join(__dirname, 'project-dist', 'index.html'), 'utf-8');
+
+// создание папки Assets!!!
+
+fs.mkdir(path.join(__dirname, 'project-dist'), { recursive: true }, (err) => {
+  if (err) throw err;  
+});
+
+let readFrom = path.join(__dirname, 'assets');
+let copyTo = path.join(__dirname, 'project-dist', 'assets');
+
+function copyFile(pathFile, pathCopy){
+   fs.readdir(pathFile, {withFileTypes: true}, (err, files) => { //read assets
+      if(err) throw err;
+
+      files.forEach(file => {
+        if(!file.isFile()) {          
+          copyFile(path.join(pathFile,file.name), path.join(pathCopy,file.name));
+        }
+        else {
+          (async () => { //create => copy
+            try {
+              await fs.promises.mkdir(pathCopy, {recursive: true});            
+              let filePathOld = path.join(pathFile,file.name);
+              let filePathNew = path.join(pathCopy,file.name);                      
+              fs.promises.copyFile(filePathOld, filePathNew);            
+            }
+            catch (error) {
+              throw error;
+            }
+          })();
+        }
+      })
+   })
+};
+
+copyFile(readFrom, copyTo);
+
+
+// создание style.css!!! //создание по порядку, м вызвать ошибку
+const pathFileCss = path.join(__dirname, 'styles');
+
+fs.readdir(pathFileCss, {withFileTypes: true}, (err, files) => {
+  if (err) throw err;
+  let data = '';  
+
+  files.forEach(file => {      
+      if(file.isFile() && file.name.split('.')[1] === 'css') {
+          let filePath = path.join(__dirname, 'styles', file.name); 
+          let stream = fs.createReadStream(filePath, 'utf-8');
+          stream.on('error', error => console.log(error.message)); 
+          stream.on('data', chunk => data+=chunk);
+          stream.on('end', () => outputCss.write(data));
+      }      
+  });
+});
+
+
+// сборка html
+
+
+
+
+
+
+
