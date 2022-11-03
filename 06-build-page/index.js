@@ -1,9 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-
 const outputCss = fs.createWriteStream(path.join(__dirname, 'project-dist', 'style.css'), 'utf-8');
-
 
 // создание папки Assets!!!
 
@@ -41,7 +39,6 @@ function copyFile(pathFile, pathCopy){
 
 copyFile(readFrom, copyTo);
 
-
 // создание style.css!!! //создание по порядку, м вызвать ошибку
 const pathFileCss = path.join(__dirname, 'styles');
 
@@ -60,17 +57,10 @@ fs.readdir(pathFileCss, {withFileTypes: true}, (err, files) => {
   });
 });
 
-
 // сборка html
 
 const outputHtml = fs.createWriteStream(path.join(__dirname, 'project-dist', 'index.html'), 'utf-8');
-
-//cчитывание главного файла
 const inputHtml = fs.createReadStream(path.join(__dirname, 'template.html'), 'utf-8');
-// let data = '';
-// inputHtml.on('error', error => console.log('Error', error.message));
-// inputHtml.on('data', chunk => data += chunk);
-// inputHtml.on('end', () => console.log('data'));
 
 //считывание components
 
@@ -93,7 +83,7 @@ let objComp = {};
     getObj();
 })();
 
-
+// теги в template изменяются на знаечение ключей components
 async function getObj() {
   let a = await fs.promises.readFile(path.join(__dirname, 'template.html'), 'utf-8');  
     for(key in objComp) {
