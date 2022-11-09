@@ -57,7 +57,7 @@ fs.readdir(pathFileCss, { withFileTypes: true }, (err, files) => {
       let filePath = path.join(__dirname, "styles", file.name);
       let stream = fs.createReadStream(filePath, "utf-8");
       stream.on("error", (error) => console.log(error.message));
-      stream.on("data", (data) => output.write(data));
+      stream.on("data", (data) => outputCss.write(data));
     }
   });
 });

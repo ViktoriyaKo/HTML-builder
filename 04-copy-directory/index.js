@@ -41,7 +41,7 @@ function copyFile(pathFile, pathCopy) {
       files.forEach((file) => {
         arrayFiles.push(file.name);
       });
-
+      console.log(arrayFiles);
       let extraFile = copyFile.filter((item) => !arrayFiles.includes(item));
 
       extraFile.forEach((extFile) => {
