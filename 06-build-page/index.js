@@ -1,5 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const promises = require("fs/promises");
+
+fs.mkdir(path.join(__dirname, "project-dist"), { recursive: true }, (err) => {
+  if (err) throw err;
+});
 
 const outputCss = fs.createWriteStream(
   path.join(__dirname, "project-dist", "style.css"),
@@ -8,42 +13,45 @@ const outputCss = fs.createWriteStream(
 
 // создание папки Assets!!!
 
-fs.mkdir(path.join(__dirname, "project-dist"), { recursive: true }, (err) => {
-  if (err) throw err;
-});
-
 let readFrom = path.join(__dirname, "assets");
 let copyTo = path.join(__dirname, "project-dist", "assets");
 
-function copyFile(pathFile, pathCopy) {
-  fs.readdir(pathFile, { withFileTypes: true }, (err, files) => {
-    //read assets
-    if (err) throw err;
-
-    files.forEach((file) => {
-      if (!file.isFile()) {
-        copyFile(
-          path.join(pathFile, file.name),
-          path.join(pathCopy, file.name)
-        );
-      } else {
-        (async () => {
-          //create => copy
-          try {
-            await fs.promises.mkdir(pathCopy, { recursive: true });
-            let filePathOld = path.join(pathFile, file.name);
-            let filePathNew = path.join(pathCopy, file.name);
-            fs.promises.copyFile(filePathOld, filePathNew);
-          } catch (error) {
-            throw error;
-          }
-        })();
-      }
-    });
-  });
+async function createFolder(pathFile, pathCopy) {
+  await fs.promises.mkdir(pathCopy, { recursive: true });
+  await deleteFolder(pathCopy);
+  await copyFolder(pathFile, pathCopy);
 }
 
-copyFile(readFrom, copyTo);
+async function deleteFolder(pathFile) {
+  let files = await promises.readdir(pathFile);
+  for (let file of files) {
+    let stat = await promises.stat(path.join(pathFile, file));
+    if (stat.isFile()) {
+      await fs.promises.unlink(path.join(pathFile, file)); //удаление файла
+    } else {
+      await deleteFolder(path.join(pathFile, file));
+      await fs.promises.rmdir(path.join(pathFile, file)); //удаление посл папки
+    }
+  }
+}
+
+async function copyFolder(pathFile, pathCopy) {
+  let files = await promises.readdir(pathFile);
+  for (let file of files) {
+    let stat = await promises.stat(path.join(pathFile, file));
+    if (stat.isFile()) {
+      await fs.promises.copyFile(
+        path.join(pathFile, file),
+        path.join(pathCopy, file)
+      );
+    } else {
+      await fs.promises.mkdir(path.join(pathCopy, file), { recursive: true });
+      await copyFolder(path.join(pathFile, file), path.join(pathCopy, file)); //рек
+    }
+  }
+}
+
+createFolder(readFrom, copyTo);
 
 // создание style.css!!! //создание по порядку, м вызвать ошибку
 const pathFileCss = path.join(__dirname, "styles");
